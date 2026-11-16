@@ -152,6 +152,9 @@ export class DashboardPanel {
         // Replace nonce placeholder
         html = html.replace(/\{\{nonce\}\}/g, nonce);
 
+        // Show the installed extension version in the footer
+        html = html.replace(/\{\{version\}\}/g, this._getVersionLabel());
+
         // Update CSP to allow our nonce
         html = html.replace(
             /<meta http-equiv="Content-Security-Policy"[^>]*>/,
@@ -159,6 +162,20 @@ export class DashboardPanel {
         );
 
         return html;
+    }
+
+    /**
+     * Version label for the footer ("v0.4.3"), read from the shipped package.json
+     * so it always matches the installed build. Empty if it cannot be read.
+     */
+    private _getVersionLabel(): string {
+        try {
+            const pkgPath = path.join(this._extensionUri.fsPath, 'package.json');
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+            return typeof pkg.version === 'string' ? `v${pkg.version}` : '';
+        } catch {
+            return '';
+        }
     }
 
     /**

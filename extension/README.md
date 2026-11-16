@@ -315,7 +315,7 @@ Native **Git workflows** designed specifically for Power Apps development.
 Download the `.vsix` file and run:
 
 ```powershell
-code --install-extension powerapps-fusion-studio-0.4.2.vsix
+code --install-extension powerapps-fusion-studio-0.4.3.vsix
 ```
 
 <br>

@@ -135,9 +135,15 @@ See the [Quick Start guide](docs/QUICKSTART.md) for prerequisites (PAC CLI, Azur
 git clone https://github.com/devladlog/Fusion-Studio.git
 cd Fusion-Studio/extension
 npm ci
-npm run compile
+npm run typecheck              # tsc type-check, no output files
+npm run bundle                 # esbuild: src/extension.ts -> dist/extension.js (with sourcemap)
 # Open the extension folder in VS Code and press F5 to launch an Extension Development Host
+
+npx @vscode/vsce package       # build a .vsix (runs the minified production bundle first)
+code --install-extension powerapps-fusion-studio-0.4.3.vsix
 ```
+
+The extension ships as a single bundled file, `dist/extension.js`, with its runtime dependencies (axios, zod, mammoth, pdf-parse) inside it, so the `.vsix` contains no `node_modules`. See the [Development Guide](docs/DEVELOPMENT.md#building) for the full set of scripts.
 
 ## Architecture
 
@@ -380,6 +386,7 @@ Fusion-Studio/
 │   │   ├── chatPanel.html     # AI Copilot
 │   │   ├── dataverseDesigner.html
 │   │   └── flowDesigner.html
+│   ├── esbuild.js             # Bundles src/ into dist/extension.js
 │   └── package.json           # Extension manifest
 │
 ├── templates/github-actions/  # CI/CD template for your own app repo
@@ -398,7 +405,7 @@ See the [changelog](extension/CHANGELOG.md) for details.
 - **0.1.0** (2025-09) - Embedded Studio, PAC CLI integration, unpack/pack
 - **0.2.0** (2025-12) - PowerFx parser, linter and dependency graph, Git-first workflow
 - **0.3.x** (2026-04) - Azure OpenAI generation, AI Copilot, Dataverse and Flow designers
-- **0.4.x** (2026-06) - Published on the Marketplace as Power Apps Fusion Studio (`VladimiroLuis.powerapps-fusion-studio`), refreshed Marketplace page
+- **0.4.x** (2026-06) - Published on the Marketplace as Power Apps Fusion Studio (`VladimiroLuis.powerapps-fusion-studio`), refreshed Marketplace page; 0.4.3 bundles the runtime dependencies so the Marketplace build activates
 
 ### Planned
 

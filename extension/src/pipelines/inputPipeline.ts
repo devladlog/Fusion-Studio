@@ -22,8 +22,8 @@ export class InputPipeline {
 
   /**
    * Generate artifacts from a document file (PDF / Word / Markdown / plain text).
-   * Currently reads file as text. PDF/Word binary parsing can be added later
-   * via libraries like pdf-parse / mammoth.
+   * PDF text is extracted with pdf-parse and Word (.docx) text with mammoth;
+   * both are bundled into dist/extension.js by esbuild.js.
    */
   async fromDocument(documentUri: vscode.Uri): Promise<void> {
     const ext = path.extname(documentUri.fsPath).toLowerCase();
@@ -35,8 +35,11 @@ export class InputPipeline {
       text = fs.readFileSync(documentUri.fsPath, 'utf-8');
     } else if (ext === '.pdf') {
       try {
+        // Load lib/pdf-parse.js, not the package entry: pdf-parse's index.js runs a debug
+        // self-test (reading ./test/data/05-versions-space.pdf) when module.parent is
+        // undefined, which is the case inside the esbuild bundle.
         // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const pdfParse = require('pdf-parse') as (buf: Buffer) => Promise<{ text: string; numpages: number }>;
+        const pdfParse = require('pdf-parse/lib/pdf-parse.js') as (buf: Buffer) => Promise<{ text: string; numpages: number }>;
         const buffer = fs.readFileSync(documentUri.fsPath);
         const data = await pdfParse(buffer);
         text = data.text;

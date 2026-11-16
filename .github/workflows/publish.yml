@@ -3,12 +3,18 @@ name: Publish Extension
 on:
   push:
     tags:
-      - 'v*'  # Triggers on version tags like v0.3.0
+      - 'v*'  # Triggers on version tags like v0.4.3
   workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  contents: write  # needed to create the GitHub Release
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./extension
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -17,21 +23,29 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
 
       - name: Install dependencies
-        working-directory: ./extension
         run: npm ci
 
-      - name: Compile
-        working-directory: ./extension
-        run: npm run compile
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Bundle
+        run: npm run bundle:prod
+
+      # vsce runs "vscode:prepublish" (type-check + production bundle) again before packaging.
+      - name: Package VSIX
+        run: npx @vscode/vsce package
 
       - name: Publish to VS Code Marketplace
-        working-directory: ./extension
-        run: npx @vscode/vsce publish -p ${{ secrets.VSCE_PAT }}
-        
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: npx @vscode/vsce publish --packagePath *.vsix
+
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: extension/*.vsix
