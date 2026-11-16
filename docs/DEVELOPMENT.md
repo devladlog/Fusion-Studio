@@ -11,8 +11,8 @@
 
 ```mermaid
 flowchart LR
-    A[Clone Repo] --> B[npm install]
-    B --> C[npm run compile]
+    A[Clone Repo] --> B[npm ci]
+    B --> C[npm run bundle]
     C --> D[Press F5]
     D --> E[Extension Dev Host]
 ```
@@ -21,12 +21,13 @@ flowchart LR
 # Clone and setup
 git clone https://github.com/devladlog/Fusion-Studio.git
 cd Fusion-Studio/extension
-npm install
+npm ci
 
-# Compile
-npm run compile
+# Type-check and bundle
+npm run typecheck
+npm run bundle
 
-# Run (Press F5 in VS Code)
+# Run (Press F5 in VS Code - the default build task keeps dist/ up to date in watch mode)
 ```
 
 ## Project Structure
@@ -47,7 +48,8 @@ graph TD
         RES[resources/]
         PKG[package.json]
         TS[tsconfig.json]
-        OUT[out/]
+        ESB[esbuild.js]
+        DIST[dist/]
     end
     
     subgraph Source["src/"]
@@ -92,39 +94,62 @@ gitgraph
 
 ## Building
 
+The extension is bundled with [esbuild](https://esbuild.github.io/). `esbuild.js` bundles `src/extension.ts` and its runtime dependencies (axios, zod, mammoth, pdf-parse) into a single CommonJS file, `dist/extension.js`, which is the `main` entry in `package.json`. Only `vscode` stays external. The packaged `.vsix` therefore ships no `node_modules`; `.vscodeignore` excludes them along with `src/`, `out/` and source maps. TypeScript (`tsc`) is used only for type-checking and for compiling the tests.
+
 ```mermaid
 flowchart LR
-    subgraph Compile
-        TS[TypeScript] --> TSC[tsc]
-        TSC --> JS[JavaScript]
+    subgraph Check
+        TS[TypeScript] --> TSC[tsc --noEmit]
+        SRC[Source] --> ESL[ESLint]
     end
     
-    subgraph Lint
-        SRC[Source] --> ESL[ESLint]
-        ESL --> FIX[Auto-fix]
+    subgraph Bundle
+        TS --> ESB[esbuild]
+        DEPS[axios, zod, mammoth, pdf-parse] --> ESB
+        ESB --> JS[dist/extension.js]
     end
     
     subgraph Package
         JS --> VSCE[vsce]
-        RES[Resources] --> VSCE
+        RES[resources/] --> VSCE
         VSCE --> VSIX[.vsix]
     end
 ```
 
 ```powershell
-# Compile TypeScript
-npm run compile
+# Type-check (no output files)
+npm run typecheck
 
-# Watch mode (auto-recompile)
+# Bundle for development (dist/extension.js + sourcemap)
+npm run bundle
+
+# Bundle for production (minified, no sourcemap)
+npm run bundle:prod
+
+# Watch mode: esbuild rebuilds dist/ on change; tsc reports type errors
 npm run watch
+npm run watch:tsc
 
 # Lint
 npm run lint
 npm run lint:fix
 
-# Package
-npm run package
+# Package a .vsix. vsce runs "vscode:prepublish" (typecheck + bundle:prod) first.
+npx @vscode/vsce package          # or: npm run package
 ```
+
+| Script | Command | Purpose |
+|--------|---------|---------|
+| `bundle` | `node esbuild.js` | Development bundle with sourcemap |
+| `bundle:prod` | `node esbuild.js --production` | Minified bundle used for the `.vsix` |
+| `typecheck` | `tsc -p ./ --noEmit` | Type-check only |
+| `compile` | `tsc -p ./` | Emit `out/` (needed by the tests) |
+| `watch` / `watch:tsc` | esbuild / tsc in watch mode | Used by the default VS Code build task (F5) |
+| `vscode:prepublish` | `typecheck` + `bundle:prod` | Run automatically by `vsce package` and `vsce publish` |
+
+Do not use `vsce package --no-dependencies` as a workaround; it is not needed now that nothing is loaded from `node_modules` at runtime. To check a package, list it with `npx @vscode/vsce ls` or open the `.vsix` as a zip: it should contain `extension/dist/extension.js` and `extension/resources/`, and no `extension/node_modules/`.
+
+When you add a runtime dependency, add it to `dependencies` and import it with a static string (`import x from 'pkg'` or `require('pkg')`) so esbuild can bundle it. Dependencies that read their own files from disk at runtime need extra handling in `esbuild.js` (see the pdf-parse plugin there).
 
 ## Testing
 
@@ -152,7 +177,7 @@ flowchart TB
 ```
 
 ```powershell
-# Run tests
+# Run tests (pretest compiles out/ with tsc and builds dist/ with esbuild)
 npm test
 
 # Run specific test file
@@ -468,7 +493,7 @@ flowchart TB
 
 ### GitHub Actions Workflows
 
-- `.github/workflows/publish.yml` builds the extension and publishes it to the VS Code Marketplace when a `v*` tag is pushed (see [Release Process](#release-process)).
+- `.github/workflows/publish.yml` type-checks and bundles the extension, packages a `.vsix`, publishes that `.vsix` to the VS Code Marketplace and attaches it to a GitHub Release when a `v*` tag is pushed (see [Release Process](#release-process)).
 - `templates/github-actions/powerapps-ci.yml` is a template for **your own Power Apps app repo**: it lints PowerFx sources, runs `pac canvas pack` and deploys. It does not run in this repository; copy it to `.github/workflows/` in your app repo.
 
 ### Azure DevOps Pipeline
@@ -544,12 +569,14 @@ flowchart LR
 6. CI creates GitHub Release with VSIX
 7. Publish to VS Code Marketplace
 
-Pushing a `v*` tag runs [`.github/workflows/publish.yml`](../.github/workflows/publish.yml), which publishes with `npx @vscode/vsce publish -p ${{ secrets.VSCE_PAT }}`. Add a Marketplace Personal Access Token as the `VSCE_PAT` repository secret before you push a tag. To publish by hand instead:
+Pushing a `v*` tag runs [`.github/workflows/publish.yml`](../.github/workflows/publish.yml). It runs `npm ci`, the type-check and the production bundle, builds the `.vsix` with `npx @vscode/vsce package`, then publishes that same file with `npx @vscode/vsce publish --packagePath`. The Marketplace token is read from the `VSCE_PAT` environment variable, which the workflow fills from the `VSCE_PAT` repository secret, so it never appears on a command line. Add a Marketplace Personal Access Token as that secret before you push a tag. To publish by hand instead:
 
 ```bash
 cd extension
+npm ci
+npx @vscode/vsce package               # bundles (vscode:prepublish) and builds the .vsix
+code --install-extension powerapps-fusion-studio-<version>.vsix   # test it locally first
 npx @vscode/vsce login VladimiroLuis   # the publisher in package.json
-npx @vscode/vsce package               # optional: build a .vsix to test locally
 npx @vscode/vsce publish
 ```
 
@@ -558,8 +585,8 @@ npx @vscode/vsce publish
 ### Extension Not Loading
 
 1. Check Output > Power Apps Studio for errors
-2. Verify `out/` folder exists
-3. Run `npm run compile`
+2. Verify `dist/extension.js` exists (`main` in `package.json` points to it)
+3. Run `npm run bundle`
 
 ### PAC CLI Not Found
 

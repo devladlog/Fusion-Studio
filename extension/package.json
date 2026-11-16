@@ -2,7 +2,7 @@
   "name": "powerapps-fusion-studio",
   "displayName": "Power Apps Fusion Studio",
   "description": "Power Apps Studio inside VS Code with engineering super-powers: AI generation, Git-first workflow, PowerFx AST analysis, dependency graphs, linting, and Dataverse integration",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "publisher": "VladimiroLuis",
   "author": {
     "name": "Vladimiro Luis",
@@ -69,7 +69,7 @@
     "Citizen Developer"
   ],
   "icon": "resources/powerapps.png",
-  "main": "./out/extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
@@ -480,11 +480,16 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run typecheck && npm run bundle:prod",
+    "bundle": "node esbuild.js",
+    "bundle:prod": "node esbuild.js --production",
+    "typecheck": "tsc -p ./ --noEmit",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "watch": "node esbuild.js --watch",
+    "watch:tsc": "tsc -p ./ --noEmit --watch",
     "lint": "eslint src --ext ts",
     "lint:fix": "eslint src --ext ts --fix",
+    "pretest": "npm run compile && npm run bundle",
     "test": "node ./out/test/runTest.js",
     "package": "vsce package"
   },
@@ -497,6 +502,7 @@
     "@typescript-eslint/parser": "^6.13.0",
     "@vscode/test-electron": "^2.3.8",
     "@vscode/vsce": "^2.22.0",
+    "esbuild": "^0.28.2",
     "eslint": "^8.54.0",
     "glob": "^10.3.10",
     "mocha": "^10.2.0",
@@ -505,7 +511,7 @@
   "dependencies": {
     "axios": "^1.15.0",
     "mammoth": "^1.12.0",
-    "uuid": "^9.0.0",
+    "pdf-parse": "1.1.1",
     "zod": "^4.3.6"
   }
 }

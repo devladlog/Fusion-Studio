@@ -1,14 +1,25 @@
-.vscode/**
-.vscode-test/**
-src/**
-**/*.ts
-!out/**/*.js
-.gitignore
-.eslintrc.json
-tsconfig.json
-**/*.map
+# Files left out of the VSIX. The extension runs from dist/extension.js, which
+# esbuild.js builds with every runtime dependency bundled in, so node_modules,
+# the TypeScript sources and the tsc output are not shipped.
+# What ships: package.json, README.md, CHANGELOG.md, LICENSE,
+# language-configuration.json, resources/ and dist/extension.js.
+
+# Dependencies (bundled into dist/extension.js)
 node_modules/**
-!node_modules/uuid/**
+
+# Sources, tsc output and tests
+src/**
+out/**
+.vscode-test/**
+**/*.ts
+**/*.map
+
+# Build and tooling configuration
+esbuild.js
+tsconfig.json
+.eslintrc.json
+.vscode/**
+.gitignore
 .github/**
 .azure-pipelines/**
 *.vsix

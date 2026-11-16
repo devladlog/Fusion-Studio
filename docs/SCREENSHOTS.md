@@ -35,7 +35,7 @@ The README references the following screenshots that need to be captured:
 
 ```powershell
 cd extension
-npm run compile
+npm run bundle
 # Press F5 to launch Extension Development Host
 ```
 

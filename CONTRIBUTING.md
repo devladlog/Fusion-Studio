@@ -67,19 +67,23 @@ git remote add upstream https://github.com/devladlog/Fusion-Studio.git
 
 ```bash
 cd extension
-npm install
+npm ci
 ```
 
-### 2. Compile the Extension
+### 2. Type-check and Bundle the Extension
 
 ```bash
-npm run compile
+npm run typecheck   # tsc, no output files
+npm run bundle      # esbuild: src/extension.ts -> dist/extension.js
 ```
+
+The extension runs from the bundled `dist/extension.js`. See [Building](docs/DEVELOPMENT.md#building) for all scripts and for packaging a `.vsix` with `npx @vscode/vsce package`.
 
 ### 3. Watch for Changes (Development)
 
 ```bash
-npm run watch
+npm run watch       # esbuild rebuilds dist/ on change
+npm run watch:tsc   # optional: report type errors as you type
 ```
 
 ### 4. Launch Extension Development Host

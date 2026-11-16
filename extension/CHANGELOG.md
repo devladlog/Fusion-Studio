@@ -17,6 +17,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.3] - 2026-11-16 - Packaging Fix
+
+> **Fix release**: the Marketplace build of 0.4.2 could not start. 0.4.3 ships its runtime dependencies inside the extension.
+
+### Fixed
+- **Activation from the Marketplace build**: 0.4.2 failed on startup with `Cannot find module 'axios'`. Its package left out `node_modules` (apart from the unused `uuid`), so `axios` and `zod`, which load when the extension starts, and `mammoth`, used for Word import, were missing.
+- **PDF import**: `pdf-parse` is now a declared dependency and is bundled. Before, it was not listed in `dependencies`, so PDF parsing always fell back to the "paste or summarize the document contents" prompt.
+- **Publish workflow**: the Marketplace token is passed through the `VSCE_PAT` environment variable instead of on the command line. The workflow now type-checks, bundles and packages the `.vsix` before publishing it, so the GitHub Release gets the `.vsix` as an asset (before, `vsce publish` left no `.vsix` behind to attach).
+
+### Security
+- Updated bundled dependencies within their semver ranges to resolve known high-severity advisories in `axios`, `form-data`, `zod` and `@xmldom/xmldom` (via `mammoth`). `npm audit --omit=dev` now reports 0 vulnerabilities.
+
+### Changed
+- The extension is bundled with esbuild into a single minified file, `dist/extension.js`, which is the new entry point. The `.vsix` no longer contains `node_modules`, `out/` or source maps: it went from 131 files (1.8 MB) to 16 files (about 0.6 MB).
+- `vsce package` works without `--no-dependencies`; `vscode:prepublish` runs the type-check and the production bundle.
+- Removed the unused `uuid` dependency.
+- Repository, issue and homepage links in the extension manifest point to the public [devladlog/Fusion-Studio](https://github.com/devladlog/Fusion-Studio) repository, and the README images load from it.
+
+### Developer
+- New npm scripts: `bundle`, `bundle:prod`, `typecheck`, `watch:tsc`. `compile` (tsc) still emits `out/` for the tests; `npm test` builds both first.
+- F5 in VS Code runs esbuild and tsc in watch mode.
+
+---
+
+## [0.4.2] - 2026-06 - Marketplace Rename
+
+> Versions 0.4.0 and 0.4.1 have no separate record in the source history: the version went from 0.3.2 to 0.4.2 in one step. The changes below cover everything in that step.
+
+### Changed
+- Renamed the extension package from `fusion-studio` to `powerapps-fusion-studio` and the display name from "Fusion Studio" to "Power Apps Fusion Studio" (Marketplace ID `VladimiroLuis.powerapps-fusion-studio`).
+- Rewrote the Marketplace README.
+- Replaced the banner image.
+
+---
+
 ## [0.3.0] - 2026-04-16 - AI Integration Release
 
 > **Major Release**: Complete AI-powered development experience with Azure OpenAI integration, visual designers, and comprehensive documentation.
