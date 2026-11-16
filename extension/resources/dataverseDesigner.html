@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{{CSP}}
+<title>Fusion Studio - Dataverse Designer</title>
+<style nonce="{{NONCE}}">
+  :root {
+    --bg-primary: #1e1e1e;
+    --bg-secondary: #252526;
+    --bg-tertiary: #2d2d30;
+    --bg-card: #37373d;
+    --bg-hover: #404040;
+    --text-primary: #cccccc;
+    --text-secondary: #969696;
+    --text-bright: #ffffff;
+    --accent-blue: #0078d4;
+    --accent-purple: #744da9;
+    --accent-green: #16825d;
+    --accent-orange: #ce9178;
+    --accent-red: #f14c4c;
+    --border-color: #454545;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --gradient: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    line-height: 1.6;
+  }
+
+  /* == Header == */
+  .header {
+    position: relative;
+    padding: 24px;
+    background: var(--gradient);
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .header-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,0.2);
+    flex-shrink: 0;
+  }
+  .header-icon svg { width: 26px; height: 26px; }
+  .header-title { font-size: 22px; font-weight: 700; color: #fff; }
+  .header-sub { font-size: 13px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+  .header-badge {
+    margin-left: auto;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(255,255,255,0.18);
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.3);
+  }
+
+  /* == Main Content == */
+  .container {
+    max-width: 900px;
+    padding: 24px;
+    padding-bottom: 100px;
+  }
+
+  /* == Cards == */
+  .card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+  }
+  .card:hover {
+    border-color: var(--accent-blue);
+    box-shadow: var(--shadow);
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-color);
+  }
+  .card-title {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 700;
+    color: var(--text-bright);
+  }
+  .card-count {
+    margin-left: auto;
+    background: var(--gradient);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+  }
+  .card-body { padding: 18px; }
+
+  /* == Form Elements == */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 16px;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .span-6 { grid-column: span 6; }
+  .span-12 { grid-column: span 12; }
+
+  .field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-bright);
+  }
+  .req { color: var(--accent-red); }
+  .hint { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+  input, select, textarea {
+    width: 100%;
+    border: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+    color: var(--text-bright);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-family: inherit;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  textarea { min-height: 80px; resize: vertical; }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.15);
+  }
+  input::placeholder, textarea::placeholder {
+    color: var(--text-secondary);
+  }
+
+  .schema-wrap { position: relative; }
+  .schema-auto {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-size: 11px;
+    pointer-events: none;
+  }
+
+  /* == Columns List == */
+  #columns { display: flex; flex-direction: column; gap: 10px; }
+  .col {
+    display: grid;
+    grid-template-columns: auto 1fr 140px auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+  }
+  .col:hover {
+    border-color: var(--accent-blue);
+    background: var(--bg-hover);
+  }
+  .grip {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 1px dashed var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 11px;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .col-type[data-t="String"] { border-left: 3px solid #4fc3f7; }
+  .col-type[data-t="Memo"] { border-left: 3px solid #00b7c3; }
+  .col-type[data-t="Integer"] { border-left: 3px solid #ffb74d; }
+  .col-type[data-t="Decimal"] { border-left: 3px solid #ff8a65; }
+  .col-type[data-t="Money"] { border-left: 3px solid #9ccc65; }
+  .col-type[data-t="Boolean"] { border-left: 3px solid #ce93d8; }
+  .col-type[data-t="DateTime"] { border-left: 3px solid #90caf9; }
+  .col-type[data-t="Lookup"] { border-left: 3px solid #f48fb1; }
+  .col-type[data-t="PickList"] { border-left: 3px solid #ffe082; }
+
+  .toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    -webkit-user-select: none;
+    user-select: none;
+    color: var(--text-primary);
+  }
+  .toggle input { display: none; }
+  .rail {
+    width: 32px;
+    height: 18px;
+    border-radius: 999px;
+    background: var(--border-color);
+    position: relative;
+    transition: background 0.2s;
+  }
+  .rail::after {
+    content: '';
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--text-primary);
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    transition: transform 0.2s;
+  }
+  .toggle input:checked + .rail { background: var(--gradient); }
+  .toggle input:checked + .rail::after { transform: translateX(14px); background: #fff; }
+
+  .rm {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .rm:hover { background: var(--accent-red); color: #fff; }
+
+  .add-btn {
+    margin-top: 12px;
+    width: 100%;
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--text-primary);
+    padding: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .add-btn:hover {
+    border-color: var(--accent-blue);
+    background: rgba(0, 120, 212, 0.1);
+    color: var(--accent-blue);
+  }
+
+  /* == Footer Actions == */
+  .actions {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 24px;
+    background: linear-gradient(180deg, transparent, var(--bg-primary) 30%);
+  }
+  .create-btn {
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    color: #fff;
+    font-weight: 700;
+    font-family: inherit;
+    font-size: 14px;
+    background: var(--gradient);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+  }
+  .create-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+  .create-btn:disabled { opacity: 0.5; cursor: default; transform: none; filter: none; }
+  .spin {
+    width: 14px;
+    height: 14px;
+    border: 2px solid transparent;
+    border-top-color: #fff;
+    border-right-color: rgba(255,255,255,0.5);
+    border-radius: 50%;
+    animation: rot 0.8s linear infinite;
+    display: none;
+  }
+  .create-btn.loading .spin { display: inline-block; }
+  .create-btn.loading .txt { display: none; }
+  @keyframes rot { to { transform: rotate(360deg); } }
+
+  .note { font-size: 12px; color: var(--text-secondary); }
+
+  /* == Toast == */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 80px;
+    transform: translateX(-50%) translateY(10px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.success { background: linear-gradient(135deg, #16825d, #22c55e); color: #fff; }
+  .toast.error { background: var(--accent-red); color: #fff; }
+
+  @media (max-width: 768px) {
+    .span-6 { grid-column: span 12; }
+    .col { grid-template-columns: auto 1fr; }
+    .header-badge { display: none; }
+  }
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-row">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8">
+        <rect x="3" y="4" width="18" height="16" rx="3"/>
+        <path d="M8 8h8M8 12h8M8 16h5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="header-title">Dataverse Designer</div>
+      <div class="header-sub">Design production-ready table schemas</div>
+    </div>
+    <span class="header-badge">Fusion Studio</span>
+  </div>
+</header>
+
+<main class="container">
+  <section class="card">
+    <div class="card-header">
+      <span class="card-title">Table Definition</span>
+    </div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="field span-6">
+          <label for="displayName">Display Name <span class="req">*</span></label>
+          <input id="displayName" placeholder="e.g. Project Task" autocomplete="off" />
+        </div>
+        <div class="field span-6">
+          <label for="schemaName">Schema Name <span class="req">*</span></label>
+          <div class="schema-wrap">
+            <input id="schemaName" placeholder="e.g. cr_projecttask" autocomplete="off" />
+            <span class="schema-auto" id="schemaAuto"></span>
+          </div>
+          <span class="hint">Prefix with your publisher prefix (e.g. cr_)</span>
+        </div>
+        <div class="field span-12">
+          <label for="description">Description</label>
+          <textarea id="description" placeholder="Optional description for makers and admins"></textarea>
+        </div>
+        <div class="field span-6">
+          <label for="primaryColumn">Primary Name Column</label>
+          <input id="primaryColumn" value="name" autocomplete="off" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header">
+      <span class="card-title">Columns</span>
+      <span id="colCount" class="card-count">1</span>
+    </div>
+    <div class="card-body">
+      <div id="columns"></div>
+      <button id="addCol" class="add-btn" type="button">+ Add Column</button>
+    </div>
+  </section>
+</main>
+
+<footer class="actions">
+  <button id="createBtn" class="create-btn" type="button">
+    <span class="txt">Create Table</span>
+    <span class="spin"></span>
+  </button>
+  <span class="note">Creates table and all columns in Dataverse</span>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script nonce="{{NONCE}}">
+  const vscode = acquireVsCodeApi();
+  const columnsDiv = document.getElementById('columns');
+  const colCountEl = document.getElementById('colCount');
+  const displayNameEl = document.getElementById('displayName');
+  const schemaNameEl = document.getElementById('schemaName');
+  const schemaAutoEl = document.getElementById('schemaAuto');
+  const createBtn = document.getElementById('createBtn');
+  const types = ['String','Memo','Integer','Decimal','Money','Boolean','DateTime','Lookup','PickList'];
+
+  function esc(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function updateCount() {
+    colCountEl.textContent = String(columnsDiv.querySelectorAll('.col').length);
+  }
+
+  function suggestSchema(v) {
+    const n = v.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    schemaAutoEl.textContent = n ? '-> cr_' + n : '';
+  }
+
+  displayNameEl.addEventListener('input', () => suggestSchema(displayNameEl.value));
+
+  function addColumnRow(name, type) {
+    const selected = type || 'String';
+    const options = types.map((t) => '<option value="' + t + '"' + (t === selected ? ' selected' : '') + '>' + t + '</option>').join('');
+    const row = document.createElement('div');
+    row.className = 'col';
+    row.innerHTML =
+      '<div class="grip">::</div>' +
+      '<input class="col-name" placeholder="Column name" value="' + esc(name || '') + '" />' +
+      '<select class="col-type" data-t="' + esc(selected) + '">' + options + '</select>' +
+      '<label class="toggle"><input class="col-req" type="checkbox" /><span class="rail"></span><span>Required</span></label>' +
+      '<button class="rm" type="button" title="Remove">&#10005;</button>';
+
+    const typeEl = row.querySelector('.col-type');
+    typeEl.addEventListener('change', () => { typeEl.dataset.t = typeEl.value; });
+    row.querySelector('.rm').addEventListener('click', () => {
+      row.style.opacity = '0';
+      row.style.transform = 'translateY(-8px)';
+      row.style.transition = 'opacity 0.2s, transform 0.2s';
+      setTimeout(() => { row.remove(); updateCount(); }, 200);
+    });
+
+    columnsDiv.appendChild(row);
+    updateCount();
+  }
+
+  document.getElementById('addCol').addEventListener('click', () => addColumnRow('', 'String'));
+
+  function toast(text, type) {
+    const t = document.getElementById('toast');
+    t.textContent = text;
+    t.className = 'toast ' + type;
+    void t.offsetWidth;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3400);
+  }
+
+  createBtn.addEventListener('click', () => {
+    const cols = [];
+    columnsDiv.querySelectorAll('.col').forEach((row) => {
+      const displayName = row.querySelector('.col-name').value.trim();
+      if (!displayName) return;
+      cols.push({
+        logicalName: displayName.toLowerCase().replace(/\s+/g, '_'),
+        displayName,
+        type: row.querySelector('.col-type').value,
+        isRequired: row.querySelector('.col-req').checked,
+      });
+    });
+
+    createBtn.classList.add('loading');
+    createBtn.disabled = true;
+
+    vscode.postMessage({
+      command: 'createTable',
+      displayName: displayNameEl.value,
+      schemaName: schemaNameEl.value,
+      description: document.getElementById('description').value,
+      primaryColumn: document.getElementById('primaryColumn').value,
+      columns: cols,
+    });
+  });
+
+  window.addEventListener('message', (evt) => {
+    const msg = evt.data;
+    createBtn.classList.remove('loading');
+    createBtn.disabled = false;
+
+    if (msg.command === 'success') {
+      toast('Success! ' + (msg.text || 'Table created'), 'success');
+    } else if (msg.command === 'error') {
+      toast('Error: ' + (msg.text || 'Unable to create table'), 'error');
+    }
+  });
+
+  addColumnRow('', 'String');
+  suggestSchema('');
+</script>
+</body>
+</html>

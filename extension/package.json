@@ -1,0 +1,511 @@
+{
+  "name": "powerapps-fusion-studio",
+  "displayName": "Power Apps Fusion Studio",
+  "description": "Power Apps Studio inside VS Code with engineering super-powers: AI generation, Git-first workflow, PowerFx AST analysis, dependency graphs, linting, and Dataverse integration",
+  "version": "0.4.2",
+  "publisher": "VladimiroLuis",
+  "author": {
+    "name": "Vladimiro Luis",
+    "url": "https://www.devladlog.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/devladlog/Fusion-Studio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/devladlog/Fusion-Studio/issues"
+  },
+  "homepage": "https://github.com/devladlog/Fusion-Studio#readme",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "galleryBanner": {
+    "color": "#1e1e2e",
+    "theme": "dark"
+  },
+  "preview": false,
+  "badges": [
+    {
+      "url": "https://img.shields.io/github/stars/devladlog/Fusion-Studio?style=social",
+      "href": "https://github.com/devladlog/Fusion-Studio",
+      "description": "Star on GitHub"
+    },
+    {
+      "url": "https://img.shields.io/github/license/devladlog/Fusion-Studio",
+      "href": "https://github.com/devladlog/Fusion-Studio/blob/main/LICENSE",
+      "description": "License"
+    }
+  ],
+  "categories": [
+    "Other",
+    "Visualization",
+    "Linters",
+    "Machine Learning",
+    "Snippets",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "Power Apps",
+    "Fusion Studio",
+    "Power Platform",
+    "Canvas Apps",
+    "Low Code",
+    "No Code",
+    "Dataverse",
+    "PowerFx",
+    "Power Fx",
+    "ALM",
+    "Microsoft Power Platform",
+    "Power Automate",
+    "Flow Designer",
+    "AI Generation",
+    "Azure OpenAI",
+    "GPT-4",
+    "Code Generation",
+    "Dependency Graph",
+    "Linter",
+    "Pro Code",
+    "Citizen Developer"
+  ],
+  "icon": "resources/powerapps.png",
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "powerapps.openDashboard",
+        "title": "Open Fusion Studio Dashboard",
+        "category": "Power Apps",
+        "icon": "$(home)"
+      },
+      {
+        "command": "powerapps.openStudio",
+        "title": "Open Power Apps Studio",
+        "category": "Power Apps",
+        "icon": "$(window)"
+      },
+      {
+        "command": "powerapps.unpackApp",
+        "title": "Unpack Canvas App",
+        "category": "Power Apps",
+        "icon": "$(archive)"
+      },
+      {
+        "command": "powerapps.packApp",
+        "title": "Pack Canvas App",
+        "category": "Power Apps",
+        "icon": "$(package)"
+      },
+      {
+        "command": "powerapps.selectEnvironment",
+        "title": "Select Environment",
+        "category": "Power Apps",
+        "icon": "$(globe)"
+      },
+      {
+        "command": "powerapps.selectEnvironmentFromTree",
+        "title": "Select This Environment",
+        "category": "Power Apps"
+      },
+      {
+        "command": "powerapps.authStatus",
+        "title": "Authentication Status",
+        "category": "Power Apps",
+        "icon": "$(key)"
+      },
+      {
+        "command": "powerapps.refreshEnvironments",
+        "title": "Refresh Environments",
+        "category": "Power Apps",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "powerapps.lintFormula",
+        "title": "Lint PowerFx Formula",
+        "category": "Power Apps",
+        "icon": "$(checklist)"
+      },
+      {
+        "command": "powerapps.analyzeFormula",
+        "title": "Analyze PowerFx Formula",
+        "category": "Power Apps",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "powerapps.exportDependencyGraph",
+        "title": "Export Dependency Graph",
+        "category": "Power Apps",
+        "icon": "$(type-hierarchy)"
+      },
+      {
+        "command": "powerapps.showGraphStats",
+        "title": "Show Graph Statistics",
+        "category": "Power Apps",
+        "icon": "$(pulse)"
+      },
+      {
+        "command": "powerapps.gitInit",
+        "title": "Initialize Git Repository",
+        "category": "Power Apps",
+        "icon": "$(git-branch)"
+      },
+      {
+        "command": "powerapps.gitCommit",
+        "title": "Commit Changes",
+        "category": "Power Apps",
+        "icon": "$(git-commit)"
+      },
+      {
+        "command": "powerapps.gitCommitPowerApps",
+        "title": "Commit Power Apps Changes",
+        "category": "Power Apps",
+        "icon": "$(git-commit)"
+      },
+      {
+        "command": "powerapps.gitCreateBranch",
+        "title": "Create Feature Branch",
+        "category": "Power Apps",
+        "icon": "$(git-branch)"
+      },
+      {
+        "command": "powerapps.gitPush",
+        "title": "Push to Remote",
+        "category": "Power Apps",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "powerapps.gitPull",
+        "title": "Pull from Remote",
+        "category": "Power Apps",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "powerapps.toggleWatcher",
+        "title": "Toggle File Watcher",
+        "category": "Power Apps",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "powerapps.watchCurrentFolder",
+        "title": "Watch Current App Folder",
+        "category": "Power Apps",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "powerapps.refreshApps",
+        "title": "Refresh Apps",
+        "category": "Power Apps",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "powerapps.refreshObservability",
+        "title": "Refresh Observability",
+        "category": "Power Apps",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "powerapps.refreshDependencies",
+        "title": "Refresh Dependencies",
+        "category": "Power Apps",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "powerapps.generateFromDocument",
+        "title": "Generate App from Document",
+        "category": "Power Apps",
+        "icon": "$(file-text)"
+      },
+      {
+        "command": "powerapps.generateFromMockup",
+        "title": "Generate App from Mockup",
+        "category": "Power Apps",
+        "icon": "$(file-media)"
+      },
+      {
+        "command": "powerapps.generateFromInstructions",
+        "title": "Generate App from Instructions",
+        "category": "Power Apps",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "powerapps.analyzeCanvasApp",
+        "title": "Analyze Canvas App with AI",
+        "category": "Power Apps",
+        "icon": "$(lightbulb)"
+      },
+      {
+        "command": "powerapps.openChatPanel",
+        "title": "Open AI Copilot",
+        "category": "Power Apps",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "powerapps.openDataverseDesigner",
+        "title": "Open Dataverse Designer",
+        "category": "Power Apps",
+        "icon": "$(database)"
+      },
+      {
+        "command": "powerapps.openFlowDesigner",
+        "title": "Open Flow Designer",
+        "category": "Power Apps",
+        "icon": "$(git-merge)"
+      },
+      {
+        "command": "powerapps.setApiKey",
+        "title": "Set Azure OpenAI API Key",
+        "category": "Power Apps",
+        "icon": "$(key)"
+      },
+      {
+        "command": "powerapps.clearState",
+        "title": "Clear Cached State",
+        "category": "Power Apps",
+        "icon": "$(trash)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "powerapps-explorer",
+          "title": "Fusion Studio",
+          "icon": "resources/powerapps.svg"
+        }
+      ]
+    },
+    "views": {
+      "powerapps-explorer": [
+        {
+          "id": "powerapps.environments",
+          "name": "Environments",
+          "icon": "$(globe)",
+          "contextualTitle": "Power Platform Environments"
+        },
+        {
+          "id": "powerapps.apps",
+          "name": "Canvas Apps",
+          "icon": "$(window)",
+          "contextualTitle": "Canvas App Structure"
+        },
+        {
+          "id": "powerapps.dependencies",
+          "name": "Dependencies",
+          "icon": "$(type-hierarchy)",
+          "contextualTitle": "Data Sources & Variables"
+        },
+        {
+          "id": "powerapps.observability",
+          "name": "Studio State",
+          "icon": "$(pulse)",
+          "contextualTitle": "Live Studio State"
+        },
+        {
+          "id": "powerapps.chatPanel",
+          "type": "webview",
+          "name": "AI Copilot",
+          "icon": "$(comment-discussion)",
+          "contextualTitle": "AI Assistant"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "powerapps.environments",
+        "contents": "Welcome to Fusion Studio!\n\n[$(home) Open Dashboard](command:powerapps.openDashboard)\n\n[$(key) Authenticate](command:powerapps.authStatus)\n[$(refresh) Refresh Environments](command:powerapps.refreshEnvironments)"
+      },
+      {
+        "view": "powerapps.apps",
+        "contents": "No Canvas App loaded yet.\n\n[$(archive) Unpack App](command:powerapps.unpackApp)\n[$(home) Open Dashboard](command:powerapps.openDashboard)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "powerapps.openDashboard",
+          "when": "view =~ /^powerapps\\./",
+          "group": "navigation@0"
+        },
+        {
+          "command": "powerapps.refreshEnvironments",
+          "when": "view == powerapps.environments",
+          "group": "navigation"
+        },
+        {
+          "command": "powerapps.refreshApps",
+          "when": "view == powerapps.apps",
+          "group": "navigation"
+        },
+        {
+          "command": "powerapps.refreshDependencies",
+          "when": "view == powerapps.dependencies",
+          "group": "navigation"
+        },
+        {
+          "command": "powerapps.refreshObservability",
+          "when": "view == powerapps.observability",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "powerapps.selectEnvironmentFromTree",
+          "when": "view == powerapps.environments && viewItem == environment",
+          "group": "inline"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "powerapps.lintFormula",
+          "when": "editorHasSelection",
+          "group": "powerapps@1"
+        },
+        {
+          "command": "powerapps.analyzeFormula",
+          "when": "editorHasSelection",
+          "group": "powerapps@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "powerapps.selectEnvironmentFromTree",
+          "when": "false"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Fusion Studio",
+      "properties": {
+        "powerapps.pacCliPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to PAC CLI executable (leave empty for auto-detect)"
+        },
+        "powerapps.defaultEnvironment": {
+          "type": "string",
+          "default": "",
+          "description": "Default Power Platform environment URL"
+        },
+        "powerapps.dataverseUrl": {
+          "type": "string",
+          "default": "",
+          "description": "Dataverse environment URL (e.g., https://org.crm.dynamics.com)"
+        },
+        "powerapps.azureOpenAi.endpoint": {
+          "type": "string",
+          "default": "",
+          "description": "Azure OpenAI endpoint URL"
+        },
+        "powerapps.azureOpenAi.deploymentName": {
+          "type": "string",
+          "default": "",
+          "description": "Azure OpenAI deployment name (e.g., gpt-4)"
+        },
+        "powerapps.azureOpenAi.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Azure OpenAI API key (prefer using 'Set API Key' command for secure storage)"
+        },
+        "powerapps.autoUnpackOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically unpack canvas app after save in Studio"
+        },
+        "powerapps.sourceFolder": {
+          "type": "string",
+          "default": "src",
+          "description": "Folder for unpacked canvas app source files"
+        },
+        "powerapps.linter.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable PowerFx linting"
+        },
+        "powerapps.linter.maxComplexity": {
+          "type": "number",
+          "default": 10,
+          "description": "Maximum allowed formula complexity"
+        },
+        "powerapps.linter.rules": {
+          "type": "object",
+          "default": {
+            "no-hardcoded-environment": true,
+            "max-formula-complexity": true,
+            "no-deprecated-functions": true,
+            "prefer-switch": true,
+            "avoid-forall-side-effects": true
+          },
+          "description": "Enable/disable specific linter rules"
+        },
+        "powerapps.git.autoCommit": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically commit changes when unpacking"
+        },
+        "powerapps.git.commitMessageTemplate": {
+          "type": "string",
+          "default": "[Power Apps] {changeType}: {appName}",
+          "description": "Template for auto-generated commit messages"
+        },
+        "powerapps.dependencyGraph.exportFormat": {
+          "type": "string",
+          "enum": [
+            "mermaid",
+            "dot",
+            "d2",
+            "json"
+          ],
+          "default": "mermaid",
+          "description": "Default export format for dependency graph"
+        },
+        "powerapps.telemetry.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable anonymous usage telemetry"
+        }
+      }
+    },
+    "languages": [
+      {
+        "id": "powerfx",
+        "aliases": [
+          "PowerFx",
+          "Power Fx"
+        ],
+        "extensions": [
+          ".fx",
+          ".pfx"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "lint:fix": "eslint src --ext ts --fix",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.10.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "@vscode/test-electron": "^2.3.8",
+    "@vscode/vsce": "^2.22.0",
+    "eslint": "^8.54.0",
+    "glob": "^10.3.10",
+    "mocha": "^10.2.0",
+    "typescript": "^5.3.2"
+  },
+  "dependencies": {
+    "axios": "^1.15.0",
+    "mammoth": "^1.12.0",
+    "uuid": "^9.0.0",
+    "zod": "^4.3.6"
+  }
+}

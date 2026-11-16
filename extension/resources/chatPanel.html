@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{{CSP}}
+<title>Fusion Studio - AI Copilot</title>
+<style nonce="{{NONCE}}">
+  :root {
+    --bg-primary: #1e1e1e;
+    --bg-secondary: #252526;
+    --bg-tertiary: #2d2d30;
+    --bg-card: #37373d;
+    --bg-hover: #404040;
+    --text-primary: #cccccc;
+    --text-secondary: #969696;
+    --text-bright: #ffffff;
+    --accent-blue: #0078d4;
+    --accent-purple: #744da9;
+    --accent-green: #16825d;
+    --accent-orange: #ce9178;
+    --accent-red: #f14c4c;
+    --border-color: #454545;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --gradient: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    font-size: var(--vscode-font-size, 13px);
+    color: var(--text-primary);
+    background: var(--bg-primary);
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* == Header == */
+  .header {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px;
+    background: var(--gradient);
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .header-icon {
+    position: relative;
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.18);
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid rgba(255,255,255,0.2);
+    flex-shrink: 0;
+  }
+  .header-icon svg { width: 22px; height: 22px; }
+  .header-text { position: relative; flex: 1; overflow: hidden; }
+  .header-title { font-size: 18px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .header-sub { font-size: 12px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+  .header-badge {
+    position: relative;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(255,255,255,0.18);
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.3);
+  }
+
+  /* == Messages Area == */
+  #messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    scroll-behavior: smooth;
+    background: var(--bg-primary);
+  }
+  #messages::-webkit-scrollbar { width: 6px; }
+  #messages::-webkit-scrollbar-track { background: transparent; }
+  #messages::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+  #messages::-webkit-scrollbar-thumb:hover { background: var(--bg-hover); }
+
+  .msg-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    animation: msgIn 0.3s cubic-bezier(0.22,1,0.36,1);
+  }
+  .msg-row.user-row { flex-direction: row-reverse; }
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Avatars */
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-bottom: 4px;
+  }
+  .avatar svg { width: 18px; height: 18px; }
+  .avatar-ai {
+    background: var(--gradient);
+    box-shadow: 0 2px 8px rgba(116, 77, 169, 0.3);
+  }
+  .avatar-user { background: var(--accent-blue); }
+
+  /* Bubbles */
+  .bubble {
+    max-width: 85%; padding: 12px 16px; line-height: 1.6;
+    word-break: break-word; font-size: 13px; position: relative;
+  }
+  .bubble-ai {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px 16px 16px 16px;
+    color: var(--text-primary);
+  }
+  .bubble-ai::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%;
+    background: var(--gradient); border-radius: 3px 0 0 3px;
+  }
+  .bubble-user {
+    background: var(--gradient);
+    color: #fff;
+    border-radius: 16px 4px 16px 16px;
+    box-shadow: var(--shadow);
+  }
+  .bubble code {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 6px; border-radius: 4px;
+    border: 1px solid var(--border-color);
+  }
+  .bubble-ai code {
+    background: var(--bg-tertiary);
+  }
+  .bubble pre {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 12px;
+    background: var(--bg-primary);
+    padding: 12px 14px; border-radius: 8px;
+    margin-top: 10px; overflow-x: auto; white-space: pre;
+    border: 1px solid var(--border-color);
+  }
+  .bubble-user pre {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .msg-time {
+    font-size: 10px; color: var(--text-secondary);
+    margin-top: 4px; padding: 0 4px;
+  }
+  .user-row .msg-time { text-align: right; }
+
+  /* Thinking indicator */
+  .thinking-wrap {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px 16px 16px 16px;
+    position: relative;
+  }
+  .thinking-wrap::before {
+    content: ''; width: 3px; height: 100%;
+    position: absolute; left: 0; top: 0;
+    background: var(--gradient); border-radius: 3px 0 0 3px;
+  }
+  .thinking-label { font-size: 12px; color: var(--accent-purple); font-weight: 600; }
+  .pulse-bar { display: flex; gap: 4px; align-items: center; }
+  .pulse-bar span {
+    display: block; width: 4px; border-radius: 2px;
+    background: var(--accent-purple); animation: barPulse 1s ease-in-out infinite;
+  }
+  .pulse-bar span:nth-child(1) { height: 8px; animation-delay: 0s; }
+  .pulse-bar span:nth-child(2) { height: 14px; animation-delay: 0.15s; }
+  .pulse-bar span:nth-child(3) { height: 10px; animation-delay: 0.3s; }
+  .pulse-bar span:nth-child(4) { height: 16px; animation-delay: 0.45s; }
+  .pulse-bar span:nth-child(5) { height: 8px; animation-delay: 0.6s; }
+  @keyframes barPulse {
+    0%, 100% { opacity: 0.3; transform: scaleY(0.6); }
+    50% { opacity: 1; transform: scaleY(1); }
+  }
+
+  /* Empty state */
+  .empty-state {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px; text-align: center; padding: 32px 20px;
+    animation: fadeUp 0.4s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .empty-logo {
+    width: 72px; height: 72px; border-radius: 18px;
+    background: var(--gradient);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow);
+  }
+  .empty-logo svg { width: 40px; height: 40px; }
+  .empty-title {
+    font-size: 18px; font-weight: 700;
+    color: var(--text-bright);
+  }
+  .empty-hint {
+    font-size: 13px; color: var(--text-secondary);
+    line-height: 1.6; max-width: 280px;
+  }
+  .suggestion-chips { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 360px; margin-top: 8px; }
+  .chip {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; border-radius: 12px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary); font-size: 13px;
+    font-family: inherit;
+    cursor: pointer; text-align: left;
+    transition: all 0.2s ease;
+  }
+  .chip:hover {
+    border-color: var(--accent-blue);
+    background: var(--bg-tertiary);
+    transform: translateX(4px);
+    box-shadow: var(--shadow);
+  }
+  .chip-icon {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: var(--gradient);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 12px; color: #fff; font-weight: 700;
+  }
+
+  /* Input area */
+  .input-area {
+    padding: 12px 16px 16px;
+    flex-shrink: 0;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+  }
+  .input-wrap {
+    display: flex; align-items: flex-end; gap: 10px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px; padding: 8px 8px 8px 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .input-wrap:focus-within {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.15);
+  }
+  #userInput {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: var(--text-bright);
+    font-family: inherit; font-size: 14px;
+    resize: none; min-height: 24px; max-height: 120px; line-height: 1.5; padding: 4px 0;
+  }
+  #userInput::placeholder { color: var(--text-secondary); }
+  #sendBtn {
+    width: 36px; height: 36px; border-radius: 12px; border: none;
+    background: var(--gradient); color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 8px rgba(116, 77, 169, 0.3);
+  }
+  #sendBtn svg { width: 16px; height: 16px; }
+  #sendBtn:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(116, 77, 169, 0.4); }
+  #sendBtn:active { transform: scale(0.95); }
+  #sendBtn:disabled { opacity: 0.4; cursor: default; transform: none; box-shadow: none; }
+  .hint-text { font-size: 11px; color: var(--text-secondary); text-align: center; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+    </svg>
+  </div>
+  <div class="header-text">
+    <div class="header-title">Fusion Studio AI</div>
+    <div class="header-sub">Your intelligent Power Platform assistant</div>
+  </div>
+  <span class="header-badge">Copilot</span>
+</div>
+
+<div id="messages">
+  <div class="empty-state" id="emptyState">
+    <div class="empty-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+    </div>
+    <div class="empty-title">Fusion Studio AI Copilot</div>
+    <div class="empty-hint">Ask about PowerFX formulas, Power Automate flows, Dataverse schemas, Canvas Apps, and more.</div>
+    <div class="suggestion-chips">
+      <button class="chip" data-prompt="How do I write a PowerFX formula to filter a gallery by the current user?">
+        <span class="chip-icon">fx</span>
+        <span>Filter a gallery by current user</span>
+      </button>
+      <button class="chip" data-prompt="Design a Dataverse schema for a project management app with tasks, milestones, and team members.">
+        <span class="chip-icon">db</span>
+        <span>Dataverse schema for project mgmt</span>
+      </button>
+      <button class="chip" data-prompt="Create a Power Automate flow that sends an approval email when a new record is created in Dataverse.">
+        <span class="chip-icon">&#8644;</span>
+        <span>Approval flow on new Dataverse record</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="input-area">
+  <div class="input-wrap">
+    <textarea id="userInput" rows="1" placeholder="Ask anything about Power Platform..."></textarea>
+    <button id="sendBtn" title="Send (Enter)">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.7 1.1l13.3 6.4c.4.2.4.8 0 1L1.7 14.9c-.5.2-1-.2-.8-.7l1.8-5.7L16 8 2.7 7.5.9 1.8c-.2-.5.3-.9.8-.7z"/></svg>
+    </button>
+  </div>
+  <div class="hint-text">Press Enter to send - Shift+Enter for new line</div>
+</div>
+
+<script nonce="{{NONCE}}">
+  const vscode = acquireVsCodeApi();
+  const messagesEl = document.getElementById('messages');
+  const inputEl = document.getElementById('userInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const emptyState = document.getElementById('emptyState');
+  let thinkingRow = null;
+
+  inputEl.addEventListener('input', () => {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+  });
+
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      inputEl.value = chip.dataset.prompt;
+      inputEl.dispatchEvent(new Event('input'));
+      send();
+    });
+  });
+
+  function timeStr() {
+    const d = new Date();
+    return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+  }
+
+  function formatMessage(text) {
+    const frag = document.createDocumentFragment();
+    const codeBlockRe = /```(?:\w+)?\n?([\s\S]*?)```/g;
+    let last = 0, m;
+    while ((m = codeBlockRe.exec(text)) !== null) {
+      if (m.index > last) {
+        const s = document.createElement('span');
+        s.textContent = text.slice(last, m.index);
+        frag.appendChild(s);
+      }
+      const pre = document.createElement('pre');
+      const code = document.createElement('code');
+      code.textContent = m[1].trim();
+      pre.appendChild(code);
+      frag.appendChild(pre);
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) {
+      const rem = text.slice(last);
+      const inRe = /`([^`]+)`/g;
+      let li = 0, im;
+      while ((im = inRe.exec(rem)) !== null) {
+        if (im.index > li) frag.appendChild(document.createTextNode(rem.slice(li, im.index)));
+        const c = document.createElement('code');
+        c.textContent = im[1];
+        frag.appendChild(c);
+        li = im.index + im[0].length;
+      }
+      if (li < rem.length) frag.appendChild(document.createTextNode(rem.slice(li)));
+    }
+    return frag;
+  }
+
+  function addMessage(text, type) {
+    if (emptyState && emptyState.parentNode) emptyState.remove();
+    const row = document.createElement('div');
+    row.className = 'msg-row' + (type === 'user' ? ' user-row' : '');
+
+    const av = document.createElement('div');
+    av.className = 'avatar ' + (type === 'user' ? 'avatar-user' : 'avatar-ai');
+    if (type === 'user') {
+      av.innerHTML = '<svg viewBox="0 0 16 16" fill="#fff"><path d="M8 8a3 3 0 100-6 3 3 0 000 6zm0 1c-3 0-6 1.5-6 3v1h12v-1c0-1.5-3-3-6-3z"/></svg>';
+    } else {
+      av.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>';
+    }
+
+    const col = document.createElement('div');
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble ' + (type === 'user' ? 'bubble-user' : 'bubble-ai');
+    if (type === 'user') { bubble.textContent = text; }
+    else { bubble.appendChild(formatMessage(text)); }
+
+    const time = document.createElement('div');
+    time.className = 'msg-time';
+    time.textContent = timeStr();
+
+    col.appendChild(bubble);
+    col.appendChild(time);
+    row.appendChild(av);
+    row.appendChild(col);
+    messagesEl.appendChild(row);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return row;
+  }
+
+  function showThinking() {
+    if (emptyState && emptyState.parentNode) emptyState.remove();
+    const row = document.createElement('div');
+    row.className = 'msg-row thinking-row';
+    const av = document.createElement('div');
+    av.className = 'avatar avatar-ai';
+    av.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>';
+    const wrap = document.createElement('div');
+    wrap.className = 'thinking-wrap';
+    wrap.innerHTML = '<div class="pulse-bar"><span></span><span></span><span></span><span></span><span></span></div><span class="thinking-label">Thinking...</span>';
+    row.appendChild(av);
+    row.appendChild(wrap);
+    messagesEl.appendChild(row);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return row;
+  }
+
+  function send() {
+    const text = inputEl.value.trim();
+    if (!text) return;
+    addMessage(text, 'user');
+    inputEl.value = '';
+    inputEl.style.height = 'auto';
+    sendBtn.disabled = true;
+    thinkingRow = showThinking();
+    vscode.postMessage({ command: 'chat', text });
+  }
+
+  sendBtn.addEventListener('click', send);
+  inputEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  });
+
+  window.addEventListener('message', evt => {
+    const msg = evt.data;
+    if (msg.command === 'thinking') {
+      if (thinkingRow) thinkingRow.remove();
+      thinkingRow = showThinking();
+    } else if (msg.command === 'reply') {
+      if (thinkingRow) { thinkingRow.remove(); thinkingRow = null; }
+      sendBtn.disabled = false;
+      addMessage(msg.text, 'ai');
+    }
+  });
+</script>
+</body>
+</html>

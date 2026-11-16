@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{{CSP}}
+<title>Fusion Studio - Flow Designer</title>
+<style nonce="{{NONCE}}">
+  :root {
+    --bg-primary: #1e1e1e;
+    --bg-secondary: #252526;
+    --bg-tertiary: #2d2d30;
+    --bg-card: #37373d;
+    --bg-hover: #404040;
+    --text-primary: #cccccc;
+    --text-secondary: #969696;
+    --text-bright: #ffffff;
+    --accent-blue: #0078d4;
+    --accent-purple: #744da9;
+    --accent-green: #16825d;
+    --accent-orange: #ce9178;
+    --accent-red: #f14c4c;
+    --accent-cyan: #00b7c3;
+    --border-color: #454545;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --gradient: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    line-height: 1.6;
+  }
+
+  /* == Header == */
+  .header {
+    position: relative;
+    padding: 24px;
+    background: var(--gradient);
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .header-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,0.2);
+    flex-shrink: 0;
+  }
+  .header-icon svg { width: 26px; height: 26px; }
+  .header-title { font-size: 22px; font-weight: 700; color: #fff; }
+  .header-sub { font-size: 13px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+  .header-badge {
+    margin-left: auto;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(255,255,255,0.18);
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.3);
+  }
+
+  /* == Main Content == */
+  .container {
+    max-width: 960px;
+    padding: 24px;
+  }
+
+  /* == Cards == */
+  .card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+  }
+  .card:hover {
+    border-color: var(--accent-blue);
+    box-shadow: var(--shadow);
+  }
+  .card-header {
+    padding: 14px 18px;
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 700;
+    color: var(--text-bright);
+  }
+  .card-body { padding: 18px; }
+
+  /* == Prompt Input == */
+  .prompt-box {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .prompt-box:focus-within {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.15);
+  }
+  #instructions {
+    width: 100%;
+    min-height: 140px;
+    max-height: 300px;
+    resize: vertical;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text-bright);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.7;
+    padding: 14px 16px;
+  }
+  #instructions::placeholder { color: var(--text-secondary); }
+
+  .prompt-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-card);
+  }
+  .char-count {
+    margin-right: auto;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .example-chip {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 12px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .example-chip:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent-blue);
+    color: var(--text-bright);
+  }
+
+  /* == Actions == */
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .generate-btn {
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    color: #fff;
+    font-weight: 700;
+    font-family: inherit;
+    font-size: 14px;
+    background: var(--gradient);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+  }
+  .generate-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+  .generate-btn:disabled { opacity: 0.5; cursor: default; transform: none; filter: none; }
+
+  .spin {
+    width: 14px;
+    height: 14px;
+    border: 2px solid transparent;
+    border-top-color: #fff;
+    border-right-color: rgba(255,255,255,0.5);
+    border-radius: 50%;
+    animation: rotate 0.8s linear infinite;
+    display: none;
+  }
+  .generate-btn.loading .spin { display: inline-block; }
+  .generate-btn.loading .txt { display: none; }
+  @keyframes rotate { to { transform: rotate(360deg); } }
+
+  .status-bar {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+  .status-bar.show { display: inline-flex; }
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-purple);
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  /* == Output Section == */
+  #output { display: none; }
+  #output.show { display: block; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .stat-card:hover {
+    border-color: var(--accent-blue);
+    transform: translateY(-2px);
+  }
+  .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-bright);
+  }
+
+  .summary-box {
+    background: var(--bg-tertiary);
+    border-left: 4px solid var(--accent-purple);
+    border-radius: 0 12px 12px 0;
+    padding: 14px 18px;
+    line-height: 1.7;
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+
+  /* == Flow Steps == */
+  .steps-container { display: flex; flex-direction: column; gap: 0; }
+  .flow-step { display: flex; gap: 14px; }
+  .step-rail {
+    width: 36px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .step-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--gradient);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow);
+    flex-shrink: 0;
+  }
+  .step-dot.trigger { background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)); }
+  .step-line {
+    width: 2px;
+    flex: 1;
+    min-height: 16px;
+    background: var(--border-color);
+    margin-top: 4px;
+  }
+  .step-content {
+    flex: 1;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    transition: all 0.2s;
+  }
+  .step-content:hover {
+    border-color: var(--accent-blue);
+    background: var(--bg-hover);
+  }
+  .step-type {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+  .step-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-bright);
+  }
+
+  /* == Code Block == */
+  .code-block {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-card);
+  }
+  .code-lang {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: 'Consolas', 'Monaco', monospace;
+  }
+  .copy-btn {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 12px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent-blue);
+    color: var(--text-bright);
+  }
+  #definition {
+    margin: 0;
+    max-height: 400px;
+    overflow: auto;
+    padding: 16px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre;
+    tab-size: 2;
+  }
+
+  @media (max-width: 768px) {
+    .header-badge { display: none; }
+    .container { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-row">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8">
+        <path d="M4 6h5l2 3h9v10H4V6z"/>
+        <path d="M7 13h4m2 0h4M11 13v4"/>
+      </svg>
+    </div>
+    <div>
+      <div class="header-title">Flow Designer</div>
+      <div class="header-sub">Turn plain-language ideas into Power Automate flows</div>
+    </div>
+    <span class="header-badge">Fusion Studio</span>
+  </div>
+</header>
+
+<main class="container">
+  <section class="card">
+    <div class="card-header">Flow Prompt</div>
+    <div class="card-body">
+      <div class="prompt-box">
+        <textarea id="instructions" placeholder="Example: When a new lead is created in Dataverse, notify sales in Teams, request manager approval, then update status."></textarea>
+        <div class="prompt-footer">
+          <span id="charCount" class="char-count">0 characters</span>
+          <button class="example-chip" type="button" data-example="When a lead is added to Dataverse, send approval request to sales manager and set lead status Approved/Rejected based on response.">Lead approval</button>
+          <button class="example-chip" type="button" data-example="Every weekday at 8 AM, gather open tickets older than 48 hours and post summary to Teams support channel.">Daily digest</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="genBtn" class="generate-btn" type="button">
+          <span class="txt">Generate Flow</span>
+          <span class="spin"></span>
+        </button>
+        <div id="statusBar" class="status-bar">
+          <span id="statusDot" class="status-dot"></span>
+          <span id="statusText"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="output">
+    <article class="card">
+      <div class="card-header">Summary</div>
+      <div class="card-body">
+        <div id="summaryStats" class="stats-grid"></div>
+        <div id="summaryText" class="summary-box"></div>
+      </div>
+    </article>
+
+    <article id="stepsCard" class="card">
+      <div class="card-header">Execution Map</div>
+      <div class="card-body">
+        <div id="flowSteps" class="steps-container"></div>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-header">Flow Definition</div>
+      <div class="card-body">
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">json</span>
+            <button id="copyBtn" class="copy-btn" type="button">Copy</button>
+          </div>
+          <pre id="definition"></pre>
+        </div>
+      </div>
+    </article>
+  </section>
+</main>
+
+<script nonce="{{NONCE}}">
+  const vscode = acquireVsCodeApi();
+  const instrEl = document.getElementById('instructions');
+  const genBtn = document.getElementById('genBtn');
+  const statusBar = document.getElementById('statusBar');
+  const statusText = document.getElementById('statusText');
+  const statusDot = document.getElementById('statusDot');
+  const outputEl = document.getElementById('output');
+  const summaryStatsEl = document.getElementById('summaryStats');
+
+  instrEl.addEventListener('input', () => {
+    const n = instrEl.value.length;
+    document.getElementById('charCount').textContent = n + ' character' + (n === 1 ? '' : 's');
+  });
+
+  document.querySelectorAll('.example-chip').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      instrEl.value = chip.dataset.example || '';
+      instrEl.dispatchEvent(new Event('input'));
+    });
+  });
+
+  function setStatus(text, isError) {
+    if (!text) {
+      statusBar.classList.remove('show');
+      return;
+    }
+    statusBar.classList.add('show');
+    statusText.textContent = text;
+    statusDot.style.background = isError ? 'var(--accent-red)' : 'var(--accent-purple)';
+  }
+
+  function buildStats(defText) {
+    summaryStatsEl.innerHTML = '';
+    let parsed;
+    try { parsed = JSON.parse(defText); } catch (_) { return; }
+
+    const actions = parsed.actions || parsed.Actions || parsed.steps || parsed.Steps || [];
+    const hasTrigger = Boolean(parsed.trigger || parsed.Trigger || parsed.triggers || parsed.Triggers);
+    const actionCount = Array.isArray(actions) ? actions.length : (actions && typeof actions === 'object' ? Object.keys(actions).length : 0);
+    const connectorCount = Array.isArray(parsed.connectors) ? parsed.connectors.length : (parsed.connectors && typeof parsed.connectors === 'object' ? Object.keys(parsed.connectors).length : 0);
+
+    [
+      { k: 'Triggers', v: hasTrigger ? 1 : 0 },
+      { k: 'Actions', v: actionCount },
+      { k: 'Connectors', v: connectorCount },
+    ].forEach((item) => {
+      const el = document.createElement('div');
+      el.className = 'stat-card';
+      el.innerHTML = '<div class="stat-label">' + item.k + '</div><div class="stat-value">' + item.v + '</div>';
+      summaryStatsEl.appendChild(el);
+    });
+  }
+
+  function buildSteps(defText) {
+    const stepsEl = document.getElementById('flowSteps');
+    const stepsCard = document.getElementById('stepsCard');
+    stepsEl.innerHTML = '';
+
+    let parsed;
+    try { parsed = JSON.parse(defText); } catch (_) { stepsCard.style.display = 'none'; return; }
+
+    const actions = parsed.actions || parsed.Actions || parsed.steps || parsed.Steps || [];
+    const trigger = parsed.trigger || parsed.Trigger || parsed.triggers || parsed.Triggers;
+
+    const items = [];
+    if (trigger) {
+      const n = typeof trigger === 'string' ? trigger : (trigger.type || trigger.Type || trigger.name || trigger.Name || 'Trigger');
+      items.push({ t: 'Trigger', n, trigger: true });
+    }
+
+    if (Array.isArray(actions)) {
+      actions.forEach((a, i) => {
+        const n = typeof a === 'string' ? a : (a.name || a.Name || a.type || a.Type || 'Action ' + (i + 1));
+        const t = typeof a === 'object' ? (a.type || a.Type || 'Action') : 'Action';
+        items.push({ t, n, trigger: false });
+      });
+    } else if (actions && typeof actions === 'object') {
+      Object.entries(actions).forEach(([k, v]) => {
+        const t = v && typeof v === 'object' ? (v.type || v.Type || 'Action') : 'Action';
+        items.push({ t, n: k, trigger: false });
+      });
+    }
+
+    if (items.length === 0) { stepsCard.style.display = 'none'; return; }
+    stepsCard.style.display = '';
+
+    items.forEach((item, idx) => {
+      const step = document.createElement('div');
+      step.className = 'flow-step';
+
+      const rail = document.createElement('div');
+      rail.className = 'step-rail';
+      const dot = document.createElement('div');
+      dot.className = 'step-dot' + (item.trigger ? ' trigger' : '');
+      dot.textContent = item.trigger ? '⚡' : String(idx);
+      rail.appendChild(dot);
+      if (idx < items.length - 1) {
+        const line = document.createElement('div');
+        line.className = 'step-line';
+        rail.appendChild(line);
+      }
+
+      const content = document.createElement('div');
+      content.className = 'step-content';
+      const stepType = document.createElement('div');
+      stepType.className = 'step-type';
+      stepType.textContent = item.t;
+      const stepName = document.createElement('div');
+      stepName.className = 'step-name';
+      stepName.textContent = item.n;
+      content.appendChild(stepType);
+      content.appendChild(stepName);
+
+      step.appendChild(rail);
+      step.appendChild(content);
+      stepsEl.appendChild(step);
+    });
+  }
+
+  genBtn.addEventListener('click', () => {
+    const instructions = instrEl.value.trim();
+    if (!instructions) return;
+
+    genBtn.classList.add('loading');
+    genBtn.disabled = true;
+    outputEl.classList.remove('show');
+    setStatus('Generating flow definition...', false);
+    vscode.postMessage({ command: 'generate', instructions });
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    const text = document.getElementById('definition').textContent || '';
+    const btn = document.getElementById('copyBtn');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 1600);
+      }).catch(() => {
+        btn.textContent = 'Failed';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 1600);
+      });
+      return;
+    }
+    btn.textContent = 'Unsupported';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 1600);
+  });
+
+  window.addEventListener('message', (evt) => {
+    const msg = evt.data;
+
+    if (msg.command === 'status') {
+      setStatus(msg.text || 'Working...', false);
+      return;
+    }
+
+    if (msg.command === 'result') {
+      genBtn.classList.remove('loading');
+      genBtn.disabled = false;
+      setStatus('', false);
+
+      document.getElementById('summaryText').textContent = msg.summary || '';
+      document.getElementById('definition').textContent = msg.definition || '{}';
+      buildStats(msg.definition || '{}');
+      buildSteps(msg.definition || '{}');
+
+      outputEl.classList.add('show');
+      outputEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      return;
+    }
+
+    if (msg.command === 'error') {
+      genBtn.classList.remove('loading');
+      genBtn.disabled = false;
+      setStatus('Error: ' + (msg.text || 'Unable to generate flow'), true);
+    }
+  });
+</script>
+</body>
+</html>

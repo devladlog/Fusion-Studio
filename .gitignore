@@ -1,0 +1,22 @@
+# Dependencies and build output
+node_modules/
+out/
+dist/
+*.vsix
+.vscode-test/
+
+# Logs
+npm-debug.log*
+*.log
+
+# Secrets and local configuration
+.env
+.env.*
+*.pfx
+*.pem
+*.key
+*.publishsettings
+
+# OS files
+.DS_Store
+Thumbs.db
